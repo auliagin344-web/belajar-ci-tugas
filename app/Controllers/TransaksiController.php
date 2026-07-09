@@ -7,19 +7,22 @@ use CodeIgniter\HTTP\ResponseInterface;
 use App\Services\RajaOngkirService;
 use App\Models\TransactionModel;
 use App\Models\TransactionDetailModel;
+use App\Models\DiscountModel;
 
 class TransaksiController extends BaseController
 {
     protected $cart;
     protected $transactionModel;
     protected $transactionDetailModel;
+    protected $discountModel;
 
 public function __construct()
     {
         helper(['number', 'form']);
         $this->cart = service('cart');
         $this->transactionModel = new TransactionModel();
-        $this->transactionDetailModel = new TransactionDetailModel(); 
+        $this->transactionDetailModel = new TransactionDetailModel();
+        $this->discountModel = new DiscountModel();
     }
 
     public function index()
@@ -164,59 +167,101 @@ public function cart_add()
     }
 
     public function buy()
-    { 
-    $cartItems = $this->cart->contents();
+    {
+        $cartItems = $this->cart->contents();
 
-    if (empty($cartItems)) {
-        return redirect()->back();
-    }
+        if (empty($cartItems)) {
+            return redirect()->back();
+        }
 
-    $db = \Config\Database::connect();
-    $db->transStart(); 
+        $db = \Config\Database::connect();
+        $db->transStart();
 
-    $subtotal = 0;
-    foreach ($cartItems as $item) {
-        $subtotal += $item['qty'] * $item['price'];
-    }
+        // Ambil diskon hari ini
+        $today = date('Y-m-d');
 
-    $ongkir = (int) $this->request->getPost('ongkir');
+        $discount = $this->discountModel
+            ->where('tanggal', $today)
+            ->first();
 
-    $transaction = [
-        'username'    => $this->request->getPost('username'),
-        'alamat'      => $this->request->getPost('alamat'),
-        'ongkir'      => $ongkir,
-        'total_harga' => $subtotal + $ongkir,
-        'status'      => 0, 
-    ];
+        $nominalDiskon = 0;
 
-    // insert transaction
-    if (!$this->transactionModel->insert($transaction)) {
-        $db->transRollback();
-        return redirect()->back()->with('error', 'Gagal membuat transaksi');
-    }
+        if ($discount) {
+            $nominalDiskon = $discount['nominal'];
+        }
 
-    $transactionId = $this->transactionModel->getInsertID();
+        // Hitung subtotal
+        $subtotal = 0;
 
-    // insert transaction detail
-    foreach ($cartItems as $item) {
-        $this->transactionDetailModel->insert([
-            'transaction_id' => $transactionId,
-            'product_id'     => $item['id'],
-            'jumlah'         => $item['qty'],
-            'diskon'         => 0,
-            'subtotal_harga' => $item['qty'] * $item['price'] 
-        ]);
-    }
+        foreach ($cartItems as $item) {
+            $subtotal += $item['subtotal'];
+        }
 
-    $db->transComplete();
+        $ongkir = (int)$this->request->getPost('ongkir');
 
-    if (!$db->transStatus()) {
-        return redirect()->back()->with('error', 'Gagal membuat transaksi');
-    }
+        $transaction = [
 
-		//hapus session keranjang belanja 
-    $this->cart->destroy();
-    return redirect()->to(base_url());
+            'username'    => $this->request->getPost('username'),
+
+            'alamat'      => $this->request->getPost('alamat'),
+
+            'ongkir'      => $ongkir,
+
+            'total_harga' => $subtotal + $ongkir,
+
+            'status'      => 0
+
+        ];
+
+        if (!$this->transactionModel->insert($transaction)) {
+
+            $db->transRollback();
+
+            return redirect()->back()->with(
+                'error',
+                'Gagal membuat transaksi'
+            );
+
+        }
+
+        $transactionId = $this->transactionModel->getInsertID();
+
+        foreach ($cartItems as $item) {
+
+            $this->transactionDetailModel->insert([
+
+                'transaction_id' => $transactionId,
+
+                'product_id' => $item['id'],
+
+                'jumlah' => $item['qty'],
+
+                'diskon' => $nominalDiskon,
+
+                'subtotal_harga' => $item['subtotal']
+
+            ]);
+
+        }
+
+        $db->transComplete();
+
+        if (!$db->transStatus()) {
+
+            return redirect()->back()->with(
+                'error',
+                'Gagal membuat transaksi'
+            );
+
+        }
+
+        $this->cart->destroy();
+
+        return redirect()->to(base_url())
+            ->with(
+                'success',
+                'Pesanan berhasil dibuat.'
+            );
     }
 
     public function history()

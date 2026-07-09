@@ -21,44 +21,71 @@
 
         <?php if (session()->get('isLoggedIn')) : ?>
 
-            <!-- ADMIN ONLY -->
+            <!-- ================= ADMIN ================= -->
             <?php if (session()->get('role') == 'admin') : ?>
+
+                <!-- Produk -->
                 <li class="nav-item">
-                    <a class="nav-link <?= (uri_string() == 'produk' ? '' : 'collapsed') ?>" href="<?= base_url('produk') ?>">
-                        <i class="bi bi-receipt"></i>
+                    <a class="nav-link <?= (uri_string() == 'produk' ? '' : 'collapsed') ?>"
+                        href="<?= base_url('produk') ?>">
+                        <i class="bi bi-box-seam"></i>
                         <span>Produk</span>
                     </a>
                 </li>
 
+                <!-- Diskon -->
                 <li class="nav-item">
-            
+                    <a class="nav-link <?= (uri_string() == 'diskon' ? '' : 'collapsed') ?>"
+                        href="<?= base_url('diskon') ?>">
+                        <i class="bi bi-percent"></i>
+                        <span>Diskon</span>
+                    </a>
+                </li>
+
+                <!-- Pembelian -->
+                <li class="nav-item">
+                    <a class="nav-link <?= (uri_string() == 'pembelian' ? '' : 'collapsed') ?>"
+                        href="<?= base_url('pembelian') ?>">
+                        <i class="bi bi-bag-check"></i>
+                        <span>Pembelian</span>
+                    </a>
+                </li>
+
             <?php endif; ?>
 
-            <a class="nav-link <?php echo (uri_string() == 'history') ? "" : "collapsed" ?>" href="history">
-                    <i class="bi bi-person"></i>
+            <!-- ================= SEMUA USER ================= -->
+
+            <!-- History -->
+            <li class="nav-item">
+                <a class="nav-link <?= (uri_string() == 'history' ? '' : 'collapsed') ?>"
+                    href="<?= base_url('history') ?>">
+                    <i class="bi bi-clock-history"></i>
                     <span>History</span>
                 </a>
-            </li><!-- End History Nav -->
+            </li>
 
-            <!-- PROFILE -->
+            <!-- Profile -->
             <li class="nav-item">
-                <a class="nav-link <?= (uri_string() == 'profile' ? '' : 'collapsed') ?>" href="<?= base_url('profile') ?>">
+                <a class="nav-link <?= (uri_string() == 'profile' ? '' : 'collapsed') ?>"
+                    href="<?= base_url('profile') ?>">
                     <i class="bi bi-person"></i>
                     <span>Profile</span>
                 </a>
             </li>
 
-            <!-- 🔥 FAQ UNTUK SEMUA ROLE -->
+            <!-- FAQ -->
             <li class="nav-item">
-                <a class="nav-link <?= (uri_string() == 'faq' ? '' : 'collapsed') ?>" href="<?= base_url('faq') ?>">
+                <a class="nav-link <?= (uri_string() == 'faq' ? '' : 'collapsed') ?>"
+                    href="<?= base_url('faq') ?>">
                     <i class="bi bi-question-circle"></i>
                     <span>F.A.Q</span>
                 </a>
             </li>
 
-            <!-- CONTACT -->
+            <!-- Contact -->
             <li class="nav-item">
-                <a class="nav-link <?= (uri_string() == 'contact' ? '' : 'collapsed') ?>" href="<?= base_url('contact') ?>">
+                <a class="nav-link <?= (uri_string() == 'contact' ? '' : 'collapsed') ?>"
+                    href="<?= base_url('contact') ?>">
                     <i class="bi bi-envelope"></i>
                     <span>Contact</span>
                 </a>

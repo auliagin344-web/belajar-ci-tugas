@@ -45,5 +45,25 @@ $routes->get('ajax/destinations','TransaksiController::destinations', ['filter' 
 $routes->get('ajax/costs','TransaksiController::costs', ['filter' => 'auth']);
 
 $routes->resource('api/products', ['controller' => 'Api\ProdukController']);
+$routes->resource('api/discounts', [
+    'controller' => 'Api\DiscountController'
+]);
 
 $routes->get('api/transactions', 'Api\TransaksiController::index');
+
+$routes->group('diskon', ['filter' => ['auth','role']], function ($routes){
+
+    $routes->get('', 'DiscountController::index');
+    $routes->post('', 'DiscountController::create');
+    $routes->post('edit/(:num)', 'DiscountController::edit/$1');
+    $routes->get('delete/(:num)', 'DiscountController::delete/$1');
+
+});
+
+$routes->group('pembelian', ['filter' => 'auth'], function ($routes) {
+
+    $routes->get('', 'PembelianController::index');
+    $routes->get('detail/(:num)', 'PembelianController::detail/$1');
+    $routes->get('status/(:num)', 'PembelianController::status/$1');
+
+});
