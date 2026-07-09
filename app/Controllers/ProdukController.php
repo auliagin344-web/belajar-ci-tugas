@@ -6,10 +6,11 @@ use App\Controllers\BaseController;
 use App\Models\ProductModel;
 use Dompdf\Dompdf;
 
+
+
 class ProdukController extends BaseController
 {
-    protected $productModel;
-
+    
     public function __construct()
     {
         helper('form');
